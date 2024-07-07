@@ -18,25 +18,41 @@ if (NOT TARGET _pico_enc28j60_inclusion_marker)
 
     add_library(pico_enc28j60_included INTERFACE)
     target_compile_definitions(pico_enc28j60_included INTERFACE
-            -DPICO_ENC28J60=1
-            )
+        -DPICO_ENC28J60=1
+    )
 
     pico_add_platform_library(pico_enc28j60_included)
 
     if (NOT PICO_ENC28J60_PATH)
         set(PICO_ENC28J60_PATH ${CMAKE_CURRENT_LIST_DIR})
-    endif ()
+    endif()
     set(PICO_ENC28J60_PATH "${PICO_ENC28J60_PATH}" CACHE PATH "Path to pico-enc28j60")
 
+    if (NOT PICO_SDK_PATH)
+        set(PICO_SDK_PATH $ENV{PICO_SDK_PATH})
+    endif()
+
     set(LWIP_TEST_PATH "src/core/tcp.c")
-    set(LWIP_PATH ${PICO_EXTRAS_PATH}/lib/lwip)
+
+    if (EXISTS ${PICO_EXTRAS_PATH}/lib/lwip)
+        set(LWIP_PARENT_DIR ${PICO_EXTRAS_PATH})
+        set(LWIP_LIBRARY_NAME lwip)
+    elseif (EXISTS ${PICO_SDK_PATH}/lib/lwip)
+        set(LWIP_PARENT_DIR ${PICO_SDK_PATH})
+        set(LWIP_LIBRARY_NAME pico_lwip)
+    else()
+        message(FATAL_ERROR "Could not locate lwIP path. Make sure you have PICO_SDK_PATH and/or PICO_EXTRAS_PATH variables set and it contains the lib/lwip folder.")
+    endif()
+
+    set(LWIP_PATH ${LWIP_PARENT_DIR}/lib/lwip)
 
     set(PICO_ENC28J60_SRC src/enc28j60.c)
     set(PICO_ENC28J60_LIBS pico_stdlib hardware_spi)
+
     if (EXISTS ${LWIP_PATH}/${LWIP_TEST_PATH})
         message("lwIP available at ${LWIP_PATH}/${LWIP_TEST_PATH}; TCP/IP support is available.")
         set(PICO_ENC28J60_SRC ${PICO_ENC28J60_SRC} src/ethernetif.c)
-        set(PICO_ENC28J60_LIBS ${PICO_ENC28J60_LIBS} lwip)
+        set(PICO_ENC28J60_LIBS ${PICO_ENC28J60_LIBS} ${LWIP_LIBRARY_NAME})
     endif()
 
     add_library(pico_enc28j60 INTERFACE)
