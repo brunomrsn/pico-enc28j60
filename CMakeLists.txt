@@ -51,7 +51,7 @@ if (NOT TARGET _pico_enc28j60_inclusion_marker)
 
     if (EXISTS ${LWIP_PATH}/${LWIP_TEST_PATH})
         message("lwIP available at ${LWIP_PATH}/${LWIP_TEST_PATH}; TCP/IP support is available.")
-        set(PICO_ENC28J60_SRC ${PICO_ENC28J60_SRC} src/ethernetif.c)
+        set(PICO_ENC28J60_SRC ${PICO_ENC28J60_SRC} src/ethernetif.c src/ethernetif_setup.c)
         set(PICO_ENC28J60_LIBS ${PICO_ENC28J60_LIBS} ${LWIP_LIBRARY_NAME})
     endif()
 
